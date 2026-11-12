@@ -10,5 +10,10 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "module"
+  "type": "module",
+  "dependencies": {
+    "express": "^5.3.0",
+    "nodemon": "^3.1.14",
+    "ejs": "^7.0.2"
+  }
 }
