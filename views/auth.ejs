@@ -1,0 +1,60 @@
+<%- include('partials/header', { title }) %>
+
+<section class="auth-wrap">
+  <div class="page-head">
+    <p class="eyebrow"><%= mode === 'login' ? 'Welcome back' : 'Join AnimeKiroku' %></p>
+    <h1><%= mode === 'login' ? 'Log in' : 'Create your account' %></h1>
+  </div>
+
+  <form class="form-card" method="POST" action="<%= mode === 'login' ? '/login' : '/register' %>" data-validate novalidate>
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+
+    <% if (formError) { %>
+      <div class="flash flash-error" role="alert"><%= formError %></div>
+    <% } %>
+
+    <% if (mode === 'register') { %>
+      <div class="form-row">
+        <label for="username">Username</label>
+        <input id="username" name="username" type="text" required minlength="3" maxlength="20" pattern="[A-Za-z0-9_]{3,20}"
+               autocomplete="username" value="<%= values.username || '' %>" class="<%= errors.username ? 'invalid' : '' %>">
+        <p class="field-error" data-error-for="username"><%= errors.username || '' %></p>
+      </div>
+    <% } %>
+
+    <div class="form-row">
+      <label for="email">Email</label>
+      <input id="email" name="email" type="email" required autocomplete="email"
+             value="<%= values.email || '' %>" class="<%= errors.email ? 'invalid' : '' %>">
+      <p class="field-error" data-error-for="email"><%= errors.email || '' %></p>
+    </div>
+
+    <div class="form-row">
+      <label for="password">Password</label>
+      <input id="password" name="password" type="password" required minlength="<%= mode === 'register' ? 8 : 1 %>"
+             autocomplete="<%= mode === 'login' ? 'current-password' : 'new-password' %>" class="<%= errors.password ? 'invalid' : '' %>">
+      <% if (mode === 'register') { %><p class="hint">At least 8 characters with a letter and a number.</p><% } %>
+      <p class="field-error" data-error-for="password"><%= errors.password || '' %></p>
+    </div>
+
+    <% if (mode === 'register') { %>
+      <div class="form-row">
+        <label for="confirmPassword">Confirm password</label>
+        <input id="confirmPassword" name="confirmPassword" type="password" required autocomplete="new-password"
+               class="<%= errors.confirmPassword ? 'invalid' : '' %>">
+        <p class="field-error" data-error-for="confirmPassword"><%= errors.confirmPassword || '' %></p>
+      </div>
+    <% } %>
+
+    <button class="btn btn-primary" type="submit"><%= mode === 'login' ? 'Log in' : 'Create account' %></button>
+
+    <% if (mode === 'login') { %>
+      <p class="form-switch">New here? <a href="/register">Create an account</a></p>
+      <p class="hint">Demo logins: <code>mia@animekiroku.test</code> / <code>Password1!</code> &middot; admin: <code>admin@animekiroku.test</code> / <code>Admin123!</code></p>
+    <% } else { %>
+      <p class="form-switch">Already have an account? <a href="/login">Log in</a></p>
+    <% } %>
+  </form>
+</section>
+
+<%- include('partials/footer') %>

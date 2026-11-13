@@ -3,7 +3,8 @@ import session from "express-session";
 import path from "node:path";
 import { randomBytes } from "node:crypto";
 import { fileURLToPath } from "node:url";
-import animeRouter from "./routes/routes.js";
+import animeRouter from "./routes/animeRoutes.js";
+import authRouter from "./routes/authRoutes.js";
 import {
     securityHeaders,
     requestLogger,
@@ -45,6 +46,7 @@ app.use(flash);
 
 // map requests to the routers
 app.use("/", animeRouter);
+app.use("/", authRouter);
 
 // error middleware
 app.use(notFound);
