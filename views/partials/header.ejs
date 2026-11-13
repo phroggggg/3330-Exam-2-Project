@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title><%= typeof title !== 'undefined' ? title + ' · AnimeKiroku' : 'AnimeKiroku' %></title>
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="site-header">
+    <div class="container nav-bar">
+      <a class="brand" href="/"><span class="brand-moon" aria-hidden="true">☾</span> AnimeKiroku</a>
+      <nav aria-label="Main">
+        <ul class="nav-links">
+          <li><a href="/" class="<%= currentPath === '/' ? 'active' : '' %>">Home</a></li>
+          <li><a href="/catalog" class="<%= currentPath.startsWith('/catalog') || currentPath.startsWith('/anime') ? 'active' : '' %>">Catalog</a></li>
+          <li><a href="/parties" class="<%= currentPath.startsWith('/parties') ? 'active' : '' %>">Watch Parties</a></li>
+          <% if (currentUser) { %>
+            <li><a href="/watchlist" class="<%= currentPath.startsWith('/watchlist') ? 'active' : '' %>">My Watchlist</a></li>
+            <% if (currentUser.role === 'admin') { %>
+              <li><a href="/admin" class="<%= currentPath.startsWith('/admin') ? 'active' : '' %>">Admin</a></li>
+            <% } %>
+          <% } %>
+        </ul>
+      </nav>
+      <div class="nav-user">
+        <% if (currentUser) { %>
+          <span class="nav-greeting">Hi, <strong><%= currentUser.username %></strong></span>
+          <form action="/logout" method="POST" class="inline-form">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <button type="submit" class="btn btn-ghost btn-sm">Log out</button>
+          </form>
+        <% } else { %>
+          <a class="btn btn-ghost btn-sm" href="/login">Log in</a>
+          <a class="btn btn-primary btn-sm" href="/register">Sign up</a>
+        <% } %>
+      </div>
+    </div>
+  </header>
+
+  <main id="main" class="container">
+    <% if (flash) { %>
+      <div class="flash flash-<%= flash.type %>" role="status"><%= flash.message %></div>
+    <% } %>

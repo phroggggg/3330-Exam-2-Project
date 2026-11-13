@@ -1,0 +1,85 @@
+<%- include('partials/header', { title }) %>
+
+<section class="hero">
+  <div class="hero-text">
+    <p class="eyebrow">Your anime logbook</p>
+    <h1>Track what you watch.<br>Rate what you love.<br>Watch it together.</h1>
+    <p class="lead">AnimeKiroku keeps your watchlist, ratings and watch parties in one quiet corner of the internet, so you can stop juggling spreadsheets and group chats.</p>
+    <div class="hero-actions">
+      <% if (currentUser) { %>
+        <a class="btn btn-primary" href="/watchlist">Open my watchlist</a>
+      <% } else { %>
+        <a class="btn btn-primary" href="/register">Create a free account</a>
+      <% } %>
+      <a class="btn btn-ghost" href="/catalog">Browse the catalog</a>
+    </div>
+  </div>
+</section>
+
+<section class="stats" aria-label="Site statistics">
+  <div class="stat"><strong><%= stats.titles %></strong><span>titles in the catalog</span></div>
+  <div class="stat"><strong><%= stats.reviews %></strong><span>reviews written</span></div>
+  <div class="stat"><strong><%= stats.members %></strong><span>members</span></div>
+</section>
+
+<section>
+  <div class="section-head">
+    <h2>Top rated by the community</h2>
+    <a href="/catalog?sort=rating">See all rated titles &rarr;</a>
+  </div>
+  <% if (topRated.length) { %>
+    <div class="grid">
+      <% topRated.forEach(function (anime) { %>
+        <article class="card anime-card">
+          <div class="card-body">
+            <span class="badge"><%= anime.genre %></span>
+            <h3><a href="/catalog?anime=<%= anime.id %>"><%= anime.title %></a></h3>
+            <p class="muted small"><%= anime.totalEpisodes %> ep<%= anime.totalEpisodes === 1 ? '' : 's' %><%= anime.year ? ' · ' + anime.year : '' %></p>
+            <p class="synopsis"><%= anime.synopsis %></p>
+          </div>
+          <div class="card-foot">
+            <% if (anime.averageRating !== null) { %>
+              <span class="rating" title="<%= anime.reviewCount %> review<%= anime.reviewCount === 1 ? '' : 's' %>">★ <%= anime.averageRating.toFixed(1) %> <span class="muted small">(<%= anime.reviewCount %>)</span></span>
+            <% } else { %>
+              <span class="muted small">No ratings yet</span>
+            <% } %>
+            <a class="btn btn-ghost btn-sm" href="/catalog?anime=<%= anime.id %>">Details</a>
+          </div>
+        </article>
+      <% }) %>
+    </div>
+  <% } else { %>
+    <p class="empty">No ratings yet. Be the first to review a title!</p>
+  <% } %>
+</section>
+
+<section class="section-gap">
+  <div class="section-head">
+    <h2>Upcoming watch parties</h2>
+    <a href="/parties">All watch parties &rarr;</a>
+  </div>
+  <% if (upcomingParties.length) { %>
+    <div class="party-list">
+      <% upcomingParties.forEach(function (party) { %>
+        <article class="card party">
+          <div class="party-date" aria-hidden="true">
+            <div class="month"><%= party.dateTime.toLocaleDateString('en-US', { month: 'short' }) %></div>
+            <div class="day"><%= party.dateTime.getDate() %></div>
+          </div>
+          <div class="party-info">
+            <h3><%= party.title %></h3>
+            <p class="muted small"><a href="/catalog?anime=<%= party.anime.id %>"><%= party.anime.title %></a> &middot; <%= party.dateTime.toLocaleString('en-US', { weekday: 'short', hour: 'numeric', minute: '2-digit' }) %></p>
+          </div>
+          <div class="party-actions">
+            <% if (party.isFull) { %><span class="badge badge-warn">Full</span><% } else { %><span class="badge badge-ok"><%= party.spotsLeft %> spot<%= party.spotsLeft === 1 ? '' : 's' %> left</span><% } %>
+            <a class="btn btn-ghost btn-sm" href="/parties">View</a>
+          </div>
+        </article>
+      <% }) %>
+    </div>
+  <% } else { %>
+    <p class="empty">No parties scheduled yet.</p>
+  <% } %>
+</section>
+
+<%- include('partials/footer') %>

@@ -1,6 +1,9 @@
 import express from "express";
 import session from "express-session";
+import path from "node:path";
 import { randomBytes } from "node:crypto";
+import { fileURLToPath } from "node:url";
+import animeRouter from "./routes/routes.js";
 import {
     securityHeaders,
     requestLogger,
@@ -12,7 +15,14 @@ import {
     errorHandler,
 } from "./middleware/middleware.js";
 
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
 const app = express();
+
+// views (dynamic content) and public (static front end) are kept apart
+app.set("view engine", "ejs");
+app.set("views", path.join(__dirname, "..", "views"));
+app.use(express.static(path.join(__dirname, "..", "public")));
 
 // request processing + security middleware
 app.use(securityHeaders);
@@ -33,10 +43,8 @@ app.use(csrfProtection);
 app.use(attachUser);
 app.use(flash);
 
-
-app.get("/", (req, res) => {
-    res.send("AnimeKiroku is running");
-});
+// map requests to the routers
+app.use("/", animeRouter);
 
 // error middleware
 app.use(notFound);
