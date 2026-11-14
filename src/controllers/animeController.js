@@ -145,6 +145,27 @@ const removeEntry = (req, res, next) => {
     }
 };
 
+// JSON endpoint used by public/js/index.js to update progress without a page reload
+// Test: PATCH http://localhost:3000/api/watchlist/1  (needs a login + CSRF token)
+// plus JSON body: { "episodesWatched": 5 }
+const updateProgress = (req, res, next) => {
+    try {
+        const entry = watchlistServices.updateEntry(req.session.user.id, req.params.id, req.body);
+        res.status(200).json({
+            success: true,
+            data: {
+                id: entry.id,
+                status: entry.status,
+                episodesWatched: entry.episodesWatched,
+                totalEpisodes: entry.anime.totalEpisodes,
+                percent: entry.percent,
+            },
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
 export default {
     showHome,
     showCatalog,
@@ -155,4 +176,5 @@ export default {
     addEntry,
     updateEntry,
     removeEntry,
+    updateProgress,
 };

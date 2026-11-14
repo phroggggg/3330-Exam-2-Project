@@ -26,4 +26,7 @@ router.post("/watchlist", requireAuth, animeController.addEntry);
 router.post("/watchlist/:id/update", requireAuth, animeController.updateEntry);
 router.post("/watchlist/:id/delete", requireAuth, animeController.removeEntry);
 
+// JSON endpoint used by the "+1 ep" button
+router.patch("/api/watchlist/:id", requireAuth, animeController.updateProgress);
+
 export default router;
