@@ -1,0 +1,162 @@
+<%- include('partials/header', { title }) %>
+
+<% if (selected) { %>
+<% const { anime, reviews, myReview, myEntry } = selected; %>
+<p class="small"><a href="/catalog">&larr; Back to catalog</a></p>
+
+<div class="detail">
+  <article>
+    <span class="badge"><%= anime.genre %></span>
+    <h1><%= anime.title %></h1>
+    <div class="detail-meta muted">
+      <span><%= anime.totalEpisodes %> episode<%= anime.totalEpisodes === 1 ? '' : 's' %></span>
+      <% if (anime.year) { %><span>&middot; <%= anime.year %></span><% } %>
+    </div>
+    <p class="lead"><%= anime.synopsis %></p>
+
+    <div class="form-card">
+      <div class="detail-meta">
+        <% if (anime.averageRating !== null) { %>
+          <span class="big-rating">★ <%= anime.averageRating.toFixed(1) %></span>
+          <span class="muted">average from <%= anime.reviewCount %> review<%= anime.reviewCount === 1 ? '' : 's' %></span>
+        <% } else { %>
+          <span class="muted">No ratings yet &mdash; be the first.</span>
+        <% } %>
+      </div>
+    </div>
+
+    <section id="reviews" class="section-gap">
+      <h2>Reviews</h2>
+      <% if (reviews.length) { %>
+        <% reviews.forEach(function (r) { %>
+          <div class="review">
+            <div class="review-head">
+              <strong><%= r.username %><%= currentUser && r.userId === currentUser.id ? ' (you)' : '' %></strong>
+              <span><span class="rating">★ <%= r.rating %>/10</span> <span class="muted small">&middot; <%= r.date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) %></span></span>
+            </div>
+            <% if (r.comment) { %><p><%= r.comment %></p><% } %>
+          </div>
+        <% }) %>
+      <% } else { %>
+        <p class="empty">No reviews yet.</p>
+      <% } %>
+    </section>
+  </article>
+
+  <aside>
+    <section class="form-card">
+      <h3>Your watchlist</h3>
+      <% if (!currentUser) { %>
+        <p class="muted"><a href="/login">Log in</a> to track this title.</p>
+      <% } else if (myEntry) { %>
+        <p><span class="badge <%= myEntry.status === 'Completed' ? 'badge-ok' : '' %>"><%= myEntry.status %></span>
+           <span class="muted small"><%= myEntry.episodesWatched %> / <%= anime.totalEpisodes %> eps</span></p>
+        <a class="btn btn-ghost btn-sm" href="/watchlist">Manage in my watchlist</a>
+      <% } else { %>
+        <form method="POST" action="/watchlist">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <input type="hidden" name="animeId" value="<%= anime.id %>">
+          <input type="hidden" name="next" value="/catalog?anime=<%= anime.id %>">
+          <div class="form-row">
+            <label for="status">Status</label>
+            <select id="status" name="status">
+              <% statuses.forEach(function (s) { %><option value="<%= s %>"><%= s %></option><% }) %>
+            </select>
+          </div>
+          <button class="btn btn-primary" type="submit">Add to watchlist</button>
+        </form>
+      <% } %>
+    </section>
+
+    <section class="form-card section-gap">
+      <h3><%= myReview ? 'Edit your review' : 'Write a review' %></h3>
+      <% if (!currentUser) { %>
+        <p class="muted"><a href="/login">Log in</a> to rate and review this title.</p>
+      <% } else { %>
+        <form method="POST" action="/catalog/<%= anime.id %>/reviews" data-validate novalidate>
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <div class="form-row">
+            <label for="rating">Rating (1–10)</label>
+            <input id="rating" name="rating" type="number" min="1" max="10" step="1" required value="<%= myReview ? myReview.rating : '' %>">
+            <p class="field-error" data-error-for="rating"></p>
+          </div>
+          <div class="form-row">
+            <label for="comment">Comment <span class="muted small">(optional)</span></label>
+            <textarea id="comment" name="comment" maxlength="500"><%= myReview ? myReview.comment : '' %></textarea>
+            <p class="field-error" data-error-for="comment"></p>
+          </div>
+          <button class="btn btn-primary" type="submit"><%= myReview ? 'Update review' : 'Submit review' %></button>
+        </form>
+        <% if (myReview) { %>
+          <form method="POST" action="/catalog/<%= anime.id %>/reviews/delete" class="section-gap" data-confirm="Delete your review?">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <button class="btn btn-danger btn-sm" type="submit">Delete my review</button>
+          </form>
+        <% } %>
+      <% } %>
+    </section>
+  </aside>
+</div>
+
+<% } else { %>
+
+<div class="page-head">
+  <p class="eyebrow">Browse</p>
+  <h1>Anime catalog</h1>
+  <p>Find your next watch, then add it to your list or see what the community thinks.</p>
+</div>
+
+<form class="filter-bar" method="GET" action="/catalog" role="search">
+  <div>
+    <label for="q">Search</label>
+    <input id="q" name="q" type="search" placeholder="Title or keyword" value="<%= filters.q %>" maxlength="100">
+  </div>
+  <div>
+    <label for="genre">Genre</label>
+    <select id="genre" name="genre">
+      <option value="">All genres</option>
+      <% genres.forEach(function (g) { %>
+        <option value="<%= g %>" <%= filters.genre === g ? 'selected' : '' %>><%= g %></option>
+      <% }) %>
+    </select>
+  </div>
+  <div>
+    <label for="sort">Sort by</label>
+    <select id="sort" name="sort">
+      <option value="title" <%= filters.sort === 'title' ? 'selected' : '' %>>Title (A–Z)</option>
+      <option value="rating" <%= filters.sort === 'rating' ? 'selected' : '' %>>Highest rated</option>
+    </select>
+  </div>
+  <button class="btn btn-primary" type="submit">Apply</button>
+</form>
+
+<p class="muted small"><%= animeList.length %> title<%= animeList.length === 1 ? '' : 's' %> found</p>
+
+<% if (animeList.length) { %>
+  <div class="grid">
+    <% animeList.forEach(function (anime) { %>
+      <article class="card anime-card">
+        <div class="card-body">
+          <span class="badge"><%= anime.genre %></span>
+          <h3><a href="/catalog?anime=<%= anime.id %>"><%= anime.title %></a></h3>
+          <p class="muted small"><%= anime.totalEpisodes %> ep<%= anime.totalEpisodes === 1 ? '' : 's' %><%= anime.year ? ' · ' + anime.year : '' %></p>
+          <p class="synopsis"><%= anime.synopsis %></p>
+        </div>
+        <div class="card-foot">
+          <% if (anime.averageRating !== null) { %>
+            <span class="rating" title="<%= anime.reviewCount %> review<%= anime.reviewCount === 1 ? '' : 's' %>">★ <%= anime.averageRating.toFixed(1) %> <span class="muted small">(<%= anime.reviewCount %>)</span></span>
+          <% } else { %>
+            <span class="muted small">No ratings yet</span>
+          <% } %>
+          <a class="btn btn-ghost btn-sm" href="/catalog?anime=<%= anime.id %>">Details</a>
+        </div>
+      </article>
+    <% }) %>
+  </div>
+<% } else { %>
+  <p class="empty">No anime matched your search. <a href="/catalog">Clear filters</a></p>
+<% } %>
+
+<% } %>
+
+<%- include('partials/footer') %>
