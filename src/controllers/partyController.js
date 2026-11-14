@@ -31,8 +31,31 @@ const leaveParty = (req, res, next) => {
     }
 };
 
+// admin: POST /parties creates a party hosted by the logged-in admin
+const createParty = (req, res, next) => {
+    try {
+        const party = partyServices.createParty({ ...req.body, hostUserId: req.session.user.id });
+        req.session.flash = { type: "success", message: `Created "${party.title}".` };
+        res.redirect("/admin");
+    } catch (error) {
+        next(error);
+    }
+};
+
+const cancelParty = (req, res, next) => {
+    try {
+        const party = partyServices.cancelParty(req.params.id);
+        req.session.flash = { type: "success", message: `Cancelled "${party.title}".` };
+        res.redirect("/admin");
+    } catch (error) {
+        next(error);
+    }
+};
+
 export default {
     showParties,
     joinParty,
     leaveParty,
+    createParty,
+    cancelParty,
 };

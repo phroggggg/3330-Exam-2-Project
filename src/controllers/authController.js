@@ -1,4 +1,6 @@
 import userServices from "../services/userService.js";
+import animeServices from "../services/animeService.js";
+import partyServices from "../services/partyService.js";
 
 // session.regenerate / destroy use callbacks, so wrap them in promises
 const regenerate = (req) =>
@@ -70,10 +72,25 @@ const logout = async (req, res, next) => {
     }
 };
 
+// admin dashboard: all registered users + forms to add anime / create watch parties
+const showAdmin = (req, res, next) => {
+    try {
+        res.render("admin", {
+            title: "Admin",
+            users: userServices.listUsersWithActivity(),
+            animeList: animeServices.listAnime(),
+            parties: partyServices.listParties({ viewerId: req.session.user.id, includePast: true }),
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
 export default {
     showLogin,
     showRegister,
     register,
     login,
     logout,
+    showAdmin,
 };

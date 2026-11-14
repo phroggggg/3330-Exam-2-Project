@@ -1,6 +1,6 @@
 import express from "express";
 import animeController from "../controllers/animeController.js";
-import { requireAuth } from "../middleware/middleware.js";
+import { requireAuth, requireAdmin } from "../middleware/middleware.js";
 
 const router = express.Router();
 
@@ -11,6 +11,9 @@ router.get("/", animeController.showHome);
 // Catalog: grid, or one title with ?anime=ID
 // Test: GET http://localhost:3000/catalog?genre=Sci-Fi&sort=rating
 router.get("/catalog", animeController.showCatalog);
+
+// Admin: add an anime to the catalog (form on /admin)
+router.post("/catalog", requireAdmin, animeController.addAnime);
 
 // Reviews (one per user per anime; submitting again edits the existing review)
 router.post("/catalog/:id/reviews", requireAuth, animeController.saveReview);

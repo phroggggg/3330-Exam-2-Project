@@ -1,0 +1,133 @@
+<%- include('partials/header', { title }) %>
+
+<div class="page-head">
+  <p class="eyebrow">Administration</p>
+  <h1>Admin dashboard</h1>
+  <p>Manage the catalog, schedule watch parties and review registered members.</p>
+</div>
+
+<div class="admin-grid">
+  <section class="form-card">
+    <h2>Add anime to catalog</h2>
+    <form method="POST" action="/catalog" data-validate novalidate>
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <div class="form-row">
+        <label for="a-title">Title</label>
+        <input id="a-title" name="title" type="text" required maxlength="120" value="">
+        <p class="field-error" data-error-for="title"></p>
+      </div>
+      <div class="form-grid">
+        <div class="form-row">
+          <label for="a-genre">Genre</label>
+          <input id="a-genre" name="genre" type="text" required maxlength="40" list="genre-list" value="">
+          <datalist id="genre-list">
+            <% Array.from(new Set(animeList.map(function (a) { return a.genre; }))).sort().forEach(function (g) { %><option value="<%= g %>"><% }) %>
+          </datalist>
+          <p class="field-error" data-error-for="genre"></p>
+        </div>
+        <div class="form-row">
+          <label for="a-eps">Total episodes</label>
+          <input id="a-eps" name="totalEpisodes" type="number" required min="1" max="3000" value="">
+          <p class="field-error" data-error-for="totalEpisodes"></p>
+        </div>
+        <div class="form-row">
+          <label for="a-year">Year <span class="muted small">(optional)</span></label>
+          <input id="a-year" name="year" type="number" min="1917" max="2100" value="">
+        </div>
+      </div>
+      <div class="form-row">
+        <label for="a-syn">Synopsis</label>
+        <textarea id="a-syn" name="synopsis" required maxlength="600"></textarea>
+        <p class="field-error" data-error-for="synopsis"></p>
+      </div>
+      <button class="btn btn-primary" type="submit">Add to catalog</button>
+    </form>
+  </section>
+
+  <section class="form-card">
+    <h2>Create watch party</h2>
+    <form method="POST" action="/parties" data-validate novalidate>
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <div class="form-row">
+        <label for="p-anime">Anime</label>
+        <select id="p-anime" name="animeId" required>
+          <option value="">Choose a title…</option>
+          <% animeList.forEach(function (a) { %>
+            <option value="<%= a.id %>" ><%= a.title %></option>
+          <% }) %>
+        </select>
+        <p class="field-error" data-error-for="animeId"></p>
+      </div>
+      <div class="form-row">
+        <label for="p-title">Party title <span class="muted small">(optional)</span></label>
+        <input id="p-title" name="title" type="text" maxlength="80" value="">
+      </div>
+      <div class="form-grid">
+        <div class="form-row">
+          <label for="p-when">Date &amp; time</label>
+          <input id="p-when" name="dateTime" type="datetime-local" required value="">
+          <p class="field-error" data-error-for="dateTime"></p>
+        </div>
+        <div class="form-row">
+          <label for="p-max">Max attendees</label>
+          <input id="p-max" name="maxAttendees" type="number" required min="2" max="100" value="10">
+          <p class="field-error" data-error-for="maxAttendees"></p>
+        </div>
+      </div>
+      <button class="btn btn-primary" type="submit">Create watch party</button>
+    </form>
+  </section>
+</div>
+
+<section>
+  <h2>Watch parties (<%= parties.length %>)</h2>
+  <% if (parties.length) { %>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Party</th><th>When</th><th>Attendance</th><th></th></tr></thead>
+        <tbody>
+          <% parties.forEach(function (p) { %>
+            <tr>
+              <td><strong><%= p.title %></strong><br><span class="muted small"><%= p.anime.title %> &middot; host <%= p.hostName %></span></td>
+              <td><%= p.dateTime.toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' }) %>
+                  <% if (!p.isUpcoming) { %><span class="badge">Past</span><% } %></td>
+              <td><%= p.attendeeIds.length %> / <%= p.maxAttendees %><%= p.isFull ? ' (full)' : '' %></td>
+              <td>
+                <form method="POST" action="/parties/<%= p.id %>/cancel" class="inline-form" data-confirm="Cancel &quot;<%= p.title %>&quot;?">
+                  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                  <button class="btn btn-danger btn-sm" type="submit">Cancel</button>
+                </form>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  <% } else { %>
+    <p class="empty">No watch parties yet.</p>
+  <% } %>
+</section>
+
+<section class="section-gap">
+  <h2>Registered users (<%= users.length %>)</h2>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>ID</th><th>Username</th><th>Email</th><th>Role</th><th>Watchlist</th><th>Reviews</th><th>Joined</th></tr></thead>
+      <tbody>
+        <% users.forEach(function (u) { %>
+          <tr>
+            <td><%= u.id %></td>
+            <td><strong><%= u.username %></strong></td>
+            <td><%= u.email %></td>
+            <td><span class="badge <%= u.role === 'admin' ? 'badge-warn' : '' %>"><%= u.role %></span></td>
+            <td><%= u.watchlistCount %></td>
+            <td><%= u.reviewCount %></td>
+            <td><%= u.createdAt.toLocaleDateString('en-US', { dateStyle: 'medium' }) %></td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<%- include('partials/footer') %>

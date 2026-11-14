@@ -54,6 +54,17 @@ const showCatalog = (req, res, next) => {
     }
 };
 
+// admin: POST /catalog adds a title
+const addAnime = (req, res, next) => {
+    try {
+        const anime = animeServices.addAnime(req.body);
+        req.session.flash = { type: "success", message: `Added "${anime.title}" to the catalog.` };
+        res.redirect("/admin");
+    } catch (error) {
+        next(error);
+    }
+};
+
 // ---------- reviews ----------
 
 const saveReview = (req, res, next) => {
@@ -137,6 +148,7 @@ const removeEntry = (req, res, next) => {
 export default {
     showHome,
     showCatalog,
+    addAnime,
     saveReview,
     removeReview,
     showWatchlist,
