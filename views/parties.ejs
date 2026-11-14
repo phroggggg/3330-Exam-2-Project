@@ -1,0 +1,54 @@
+<%- include('partials/header', { title }) %>
+
+<div class="page-head">
+  <p class="eyebrow">Together</p>
+  <h1>Watch parties</h1>
+  <p>Pick a scheduled viewing and join in. Each party has limited seats, so grab yours early.</p>
+</div>
+
+<% if (parties.length) { %>
+  <div class="party-list">
+    <% parties.forEach(function (party) { %>
+      <article class="card party">
+        <div class="party-date" aria-hidden="true">
+          <div class="month"><%= party.dateTime.toLocaleDateString('en-US', { month: 'short' }) %></div>
+          <div class="day"><%= party.dateTime.getDate() %></div>
+        </div>
+        <div class="party-info">
+          <h3><%= party.title %></h3>
+          <p class="muted small">
+            <a href="/catalog?anime=<%= party.anime.id %>"><%= party.anime.title %></a> &middot;
+            <%= party.dateTime.toLocaleString('en-US', { weekday: 'short', hour: 'numeric', minute: '2-digit' }) %> &middot;
+            hosted by <%= party.hostName %>
+          </p>
+          <p class="capacity">
+            <% if (party.isFull) { %><span class="badge badge-warn">Full</span><% } else { %><span class="badge badge-ok"><%= party.spotsLeft %> spot<%= party.spotsLeft === 1 ? '' : 's' %> left</span><% } %>
+            <%= party.attendeeIds.length %> / <%= party.maxAttendees %> attending
+            <% if (party.attendees.length) { %>&mdash; <%= party.attendees.join(', ') %><% } %>
+          </p>
+        </div>
+        <div class="party-actions">
+          <% if (!currentUser) { %>
+            <a class="btn btn-primary btn-sm" href="/login">Log in to join</a>
+          <% } else if (party.joined && party.isHost) { %>
+            <span class="badge">You're hosting</span>
+          <% } else if (party.joined) { %>
+            <form method="POST" action="/parties/<%= party.id %>/leave" data-confirm="Leave this watch party?">
+              <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+              <button class="btn btn-ghost btn-sm" type="submit">Leave</button>
+            </form>
+          <% } else { %>
+            <form method="POST" action="/parties/<%= party.id %>/join">
+              <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+              <button class="btn btn-primary btn-sm" type="submit" <%= party.isFull ? 'disabled' : '' %>><%= party.isFull ? 'Party full' : 'Join' %></button>
+            </form>
+          <% } %>
+        </div>
+      </article>
+    <% }) %>
+  </div>
+<% } else { %>
+  <p class="empty">No upcoming watch parties. Check back soon!</p>
+<% } %>
+
+<%- include('partials/footer') %>

@@ -5,6 +5,7 @@ import { randomBytes } from "node:crypto";
 import { fileURLToPath } from "node:url";
 import animeRouter from "./routes/animeRoutes.js";
 import authRouter from "./routes/authRoutes.js";
+import partyRouter from "./routes/partyRoutes.js";
 import {
     securityHeaders,
     requestLogger,
@@ -47,6 +48,7 @@ app.use(flash);
 // map requests to the routers
 app.use("/", animeRouter);
 app.use("/", authRouter);
+app.use("/parties", partyRouter);
 
 // error middleware
 app.use(notFound);
