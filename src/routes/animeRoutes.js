@@ -16,4 +16,11 @@ router.get("/catalog", animeController.showCatalog);
 router.post("/catalog/:id/reviews", requireAuth, animeController.saveReview);
 router.post("/catalog/:id/reviews/delete", requireAuth, animeController.removeReview);
 
+// Personal watchlist (status + episode progress)
+// Test: GET http://localhost:3000/watchlist (after logging in)
+router.get("/watchlist", requireAuth, animeController.showWatchlist);
+router.post("/watchlist", requireAuth, animeController.addEntry);
+router.post("/watchlist/:id/update", requireAuth, animeController.updateEntry);
+router.post("/watchlist/:id/delete", requireAuth, animeController.removeEntry);
+
 export default router;

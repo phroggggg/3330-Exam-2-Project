@@ -4,6 +4,10 @@ import watchlistServices from "../services/watchlistService.js";
 
 const { WATCH_STATUSES } = watchlistServices;
 
+// only allow redirects to local paths (prevents open-redirect abuse)
+const safeRedirect = (target, fallback) =>
+    typeof target === "string" && target.startsWith("/") && !target.startsWith("//") ? target : fallback;
+
 // home + catalog
 
 const showHome = (req, res, next) => {
@@ -77,9 +81,66 @@ const removeReview = (req, res, next) => {
     }
 };
 
+// ---------- watchlist ----------
+
+const showWatchlist = (req, res, next) => {
+    try {
+        const userId = req.session.user.id;
+        const status = WATCH_STATUSES.includes(req.query.status) ? req.query.status : "";
+        res.render("watchlist", {
+            title: "My Watchlist",
+            entries: watchlistServices.getWatchlist(userId, status),
+            counts: watchlistServices.getStatusCounts(userId),
+            statuses: WATCH_STATUSES,
+            activeStatus: status,
+            addable: watchlistServices.getAddableAnime(userId),
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+const addEntry = (req, res, next) => {
+    try {
+        const entry = watchlistServices.addToWatchlist(
+            req.session.user.id,
+            req.body.animeId,
+            req.body.status || "Plan to Watch"
+        );
+        req.session.flash = { type: "success", message: `Added "${entry.anime.title}" to your watchlist.` };
+        res.redirect(safeRedirect(req.body.next, "/watchlist"));
+    } catch (error) {
+        next(error);
+    }
+};
+
+const updateEntry = (req, res, next) => {
+    try {
+        const entry = watchlistServices.updateEntry(req.session.user.id, req.params.id, req.body);
+        req.session.flash = { type: "success", message: `Updated "${entry.anime.title}".` };
+        res.redirect(safeRedirect(req.body.next, "/watchlist"));
+    } catch (error) {
+        next(error);
+    }
+};
+
+const removeEntry = (req, res, next) => {
+    try {
+        watchlistServices.removeEntry(req.session.user.id, req.params.id);
+        req.session.flash = { type: "success", message: "Removed from your watchlist." };
+        res.redirect(safeRedirect(req.body.next, "/watchlist"));
+    } catch (error) {
+        next(error);
+    }
+};
+
 export default {
     showHome,
     showCatalog,
     saveReview,
     removeReview,
+    showWatchlist,
+    addEntry,
+    updateEntry,
+    removeEntry,
 };
