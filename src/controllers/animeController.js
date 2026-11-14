@@ -50,7 +50,36 @@ const showCatalog = (req, res, next) => {
     }
 };
 
+// ---------- reviews ----------
+
+const saveReview = (req, res, next) => {
+    try {
+        const animeId = Number(req.params.id);
+        const { updated } = animeServices.submitReview(req.session.user.id, animeId, req.body.rating, req.body.comment);
+        req.session.flash = {
+            type: "success",
+            message: updated ? "Your review was updated." : "Thanks for reviewing!",
+        };
+        res.redirect(`/catalog?anime=${animeId}#reviews`);
+    } catch (error) {
+        next(error);
+    }
+};
+
+const removeReview = (req, res, next) => {
+    try {
+        const animeId = Number(req.params.id);
+        animeServices.deleteReview(req.session.user.id, animeId);
+        req.session.flash = { type: "success", message: "Your review was deleted." };
+        res.redirect(`/catalog?anime=${animeId}#reviews`);
+    } catch (error) {
+        next(error);
+    }
+};
+
 export default {
     showHome,
     showCatalog,
+    saveReview,
+    removeReview,
 };
